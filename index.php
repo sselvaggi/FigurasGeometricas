@@ -33,7 +33,15 @@ class FiguraFactory {
 	}
 }
 
-abstract class Figura {
+interface InformacionGeometrica {
+    public function superficie();
+    public function base();
+    public function altura();
+    public function diametro(); 
+    public function tipo();
+}
+
+abstract class Figura implements InformacionGeometrica {
     public abstract function generarSVG();
 }
 
@@ -46,6 +54,21 @@ class Circulo extends Figura {
         return '<svg height="1000" width="100%">'.
         '<circle cx="'.$this->radio.'" cy="'.$this->radio.'" r="'.$this->radio.'"  fill="red" />'.
         '</svg>';
+    }
+    public function superficie() {
+        return 3.14 * $this->radio * $this->radio;
+    }
+    public function base() {
+        return null;
+    }
+    public function altura() {
+        return null;
+    }
+    public function diametro() {
+        return $this->radio * 2;
+    }
+    public function tipo() {
+        return 'ciculo';
     }
 }
 
@@ -65,6 +88,34 @@ class Triangulo extends Figura {
         '<polygon points="200,10 250,190 160,210" style="fill:lime;stroke:purple;stroke-width:1" />'
         .'</svg>';
     }
+    public function superficie() {
+        return ;//3.14 * $this->radio * $this->radio;
+    }
+    public function base() {
+        if($lado1 > $lado2) {
+            if($lado1 > $lado3) {
+                return $lado1;
+            } else {
+                return $lado3;
+            }
+        } else {
+            if($lado2 > $lado3) {
+                return $lado2;
+            } else {
+                return $lado3;
+            }
+        }
+        return null;
+    }
+    public function altura() {
+        return null;
+    }
+    public function diametro() {
+        return $this->radio * 2;
+    }
+    public function tipo() {
+        return 'triangulo';
+    }
 }
 
 class Cuadrado extends Figura {
@@ -73,9 +124,24 @@ class Cuadrado extends Figura {
 		$this->lado = $lado;
 	}
     public function generarSVG() {
-        return '<svg width="100%" height="1000px">
-  <rect width="'.$this->lado.'" height="'.$this->lado.'" style="fill:rgb(0,0,255);stroke-width:3;stroke:rgb(0,0,0)" />
-</svg>';
+        return '<svg width="100%" height="1000px">'.
+        '<rect width="'.$this->lado.'" height="'.$this->lado.'" style="fill:rgb(0,0,255);stroke-width:3;stroke:rgb(0,0,0)" />'.
+            '</svg>';
+    }
+    public function superficie() {
+        return $this->lado * $this->lado;//3.14 * $this->radio * $this->radio;
+    }
+    public function base() {
+        return $lado;
+    }
+    public function altura() {
+        return $lado;
+    }
+    public function diametro() {
+        return null;
+    }
+    public function tipo() {
+        return 'cuadrado';
     }
 }
 
@@ -98,7 +164,6 @@ if (!isset($_POST['generar'])) {
 	$lado1 = isset($_POST['lado1']) ? $_POST['lado1'] : '';
 	$lado2 = isset($_POST['lado2']) ? $_POST['lado2'] : '';
 	$lado3 = isset($_POST['lado3']) ? $_POST['lado3'] : '';
-    
     if ($lado1 > 500 || $lado2 > 500 || $lado3 > 500 ||
         $lado1 < 1 || $lado2 < 1 || $lado3 < 1) {
         $errors[] = "Las medidas deben estar entre 1 y 500 px";
