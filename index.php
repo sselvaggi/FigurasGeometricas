@@ -93,8 +93,15 @@ class Triangulo extends Figura {
 	}
 
     public function generarSVG() {
+        if ($this->ladoMayor() == 1) {
+            $lado = $this->lado2;
+        } else {
+            $lado = $this->lado1;
+        }
+        $x = sqrt(($lado * $lado) + ($this->altura * $this->altura));
+        $vertice = $lado;
         return '<svg height="1000" width="100%">'.
-        '<polygon points="200,10 250,190 160,210" style="fill:lime;stroke:purple;stroke-width:1" />'
+        "<polygon points='0,{$this->altura()} {$this->base()},{$this->altura()} {$x},0' style='fill:lime;stroke:purple;stroke-width:1' />"
         .'</svg>';
     }
     public function superficie() {
@@ -103,30 +110,38 @@ class Triangulo extends Figura {
         return sqrt($s * ($s - $this->lado1) * ($s - $this->lado2) * ($s - $this->lado3));
     }
     public function base() {
-        if ($this->lado1 == $this->lado2 && $this->lado1 == $this->lado3) return $this->lado1;
-        if($this->lado1 > $this->lado2) {
-            if($this->lado1 > $this->lado3) {
-                return $this->lado1;
-            } else {
-                return $this->lado3;
-            }
+        if ($ladoMayor = $this->ladoMayor()) {
+            return $this->{'lado'.$ladoMayor};
         } else {
-            if($this->lado2 > $this->lado3) {
-                return $this->lado2;
-            } else {
-                return $this->lado3;
-            }
+            return $this->lado1;    
         }
-        return null;
     }
     public function altura() {
-        return $this->superficie() * 2 / $this->base(); 
+        return ($this->superficie() / $this->base())/2; 
     }
     public function diametro() {
         return $this->radio * 2;
     }
     public function tipo() {
         return 'triangulo';
+    }
+    private function ladoMayor() {
+        if ($this->lado1 == $this->lado2 && $this->lado1 == $this->lado3) {
+            return false;
+        }
+        if($this->lado1 > $this->lado2) {
+            if($this->lado1 > $this->lado3) {
+                return 1;
+            } else {
+                return 3;
+            }
+        } else {
+            if($this->lado2 > $this->lado3) {
+                return 2;
+            } else {
+                return 3;
+            }
+        }
     }
 }
 
