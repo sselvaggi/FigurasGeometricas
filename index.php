@@ -43,12 +43,21 @@ interface InformacionGeometrica {
 
 abstract class Figura implements InformacionGeometrica {
     public abstract function generarSVG();
+    public function info() {
+        return array(
+            'tipo' => $this->tipo(),
+            'superficie' => $this->superficie(),
+            'base' => $this->base(),
+            'altura' => $this->altura(),
+            'diametro' => $this->diametro()
+        );
+    }
 }
 
 class Circulo extends Figura {
 	protected $radio;
 	public function __construct($radio) {
-		$this->radio = $radio;
+		$this->radio = $radio * 1;
 	}
     public function generarSVG() {
         return '<svg height="1000" width="100%">'.
@@ -56,7 +65,7 @@ class Circulo extends Figura {
         '</svg>';
     }
     public function superficie() {
-        return 3.14 * $this->radio * $this->radio;
+        return pi() * $this->radio * $this->radio;
     }
     public function base() {
         return null;
@@ -78,9 +87,9 @@ class Triangulo extends Figura {
 	protected $lado3;
 
 	public function __construct($lado1, $lado2, $lado3) {
-		$this->lado1 = $lado1;
-		$this->lado2 = $lado2;
-		$this->lado3 = $lado3;
+		$this->lado1 = $lado1 * 1;
+		$this->lado2 = $lado2 * 1;
+		$this->lado3 = $lado3 * 1;
 	}
 
     public function generarSVG() {
@@ -89,26 +98,29 @@ class Triangulo extends Figura {
         .'</svg>';
     }
     public function superficie() {
-        return ;//3.14 * $this->radio * $this->radio;
+        //Fórmula de Herón
+        $s = $this->lado1 + $this->lado2 + $this->lado3 / 2;
+        return sqrt($s * ($s - $this->lado1) * ($s - $this->lado2) * ($s - $this->lado3));
     }
     public function base() {
-        if($lado1 > $lado2) {
-            if($lado1 > $lado3) {
-                return $lado1;
+        if ($this->lado1 == $this->lado2 && $this->lado1 == $this->lado3) return $this->lado1;
+        if($this->lado1 > $this->lado2) {
+            if($this->lado1 > $this->lado3) {
+                return $this->lado1;
             } else {
-                return $lado3;
+                return $this->lado3;
             }
         } else {
-            if($lado2 > $lado3) {
-                return $lado2;
+            if($this->lado2 > $this->lado3) {
+                return $this->lado2;
             } else {
-                return $lado3;
+                return $this->lado3;
             }
         }
         return null;
     }
     public function altura() {
-        return null;
+        return $this->superficie() * 2 / $this->base(); 
     }
     public function diametro() {
         return $this->radio * 2;
@@ -121,7 +133,7 @@ class Triangulo extends Figura {
 class Cuadrado extends Figura {
 	protected $lado;
 	public function __construct($lado) {
-		$this->lado = $lado;
+		$this->lado = $lado * 1;
 	}
     public function generarSVG() {
         return '<svg width="100%" height="1000px">'.
@@ -129,13 +141,13 @@ class Cuadrado extends Figura {
             '</svg>';
     }
     public function superficie() {
-        return $this->lado * $this->lado;//3.14 * $this->radio * $this->radio;
+        return ($this->lado * $this->lado);
     }
     public function base() {
-        return $lado;
+        return $this->lado;
     }
     public function altura() {
-        return $lado;
+        return $this->lado;
     }
     public function diametro() {
         return null;
@@ -253,6 +265,10 @@ if (!isset($_POST['generar'])) {
         <?php
     	}
         if (!count($errors) && isset($figura)) {
+            echo '<hr>';
+            foreach ($figura->info() as $key => $value) {
+                echo $key.': '.($value!=null?$value:'N/A').(is_numeric($value)?' px':'').'<br>';
+            }
             echo $figura->generarSVG();
         }
     	?>
