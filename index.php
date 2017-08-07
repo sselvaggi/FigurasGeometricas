@@ -98,15 +98,15 @@ class Triangulo extends Figura {
         } else {
             $lado = $this->lado1;
         }
-        $x = sqrt(($lado * $lado) + ($this->altura * $this->altura));
+        $x = sqrt( ($lado * $lado) - ($this->altura() * $this->altura()) );
         $vertice = $lado;
         return '<svg height="1000" width="100%">'.
-        "<polygon points='0,{$this->altura()} {$this->base()},{$this->altura()} {$x},0' style='fill:lime;stroke:purple;stroke-width:1' />"
+        "<polygon points='0,{$this->altura()} {$this->base()},{$this->altura()} ".$x.",0' style='fill:lime;stroke:purple;stroke-width:1' />"
         .'</svg>';
     }
     public function superficie() {
         //Fórmula de Herón
-        $s = $this->lado1 + $this->lado2 + $this->lado3 / 2;
+        $s = $this->lado1 / 2 + $this->lado2 / 2 + $this->lado3 / 2;
         return sqrt($s * ($s - $this->lado1) * ($s - $this->lado2) * ($s - $this->lado3));
     }
     public function base() {
@@ -117,7 +117,7 @@ class Triangulo extends Figura {
         }
     }
     public function altura() {
-        return ($this->superficie() / $this->base())/2; 
+        return  ($this->superficie() * 2) / $this->base(); 
     }
     public function diametro() {
         return $this->radio * 2;
