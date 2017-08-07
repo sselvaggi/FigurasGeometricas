@@ -1,8 +1,7 @@
 <?php
 // Model
-class FiguraFactory {
-
-    public static function construirFigura($tipo, $a1, $a2 = null, $a3 = null) {
+class FiguraGeometricaFactory {
+    public static function construirFiguraGeometrica($tipo, $a1, $a2 = null, $a3 = null) {
         $result;
         switch ($tipo) {
             case 'circulo':
@@ -41,7 +40,11 @@ interface InformacionGeometrica {
     public function tipo();
 }
 
-abstract class Figura implements InformacionGeometrica {
+interface dibujableSVG {
+    public function generarSVG();
+}
+
+abstract class FiguraGeometrica implements InformacionGeometrica, dibujableSVG {
     public abstract function generarSVG();
     public function info() {
         return array(
@@ -54,13 +57,13 @@ abstract class Figura implements InformacionGeometrica {
     }
 }
 
-class Circulo extends Figura {
+class Circulo extends FiguraGeometrica {
 	protected $radio;
 	public function __construct($radio) {
 		$this->radio = $radio * 1;
 	}
     public function generarSVG() {
-        return '<svg height="1000" width="100%">'.
+        return '<svg height="'.($this->radio*2).'" width="100%">'.
         '<circle cx="'.$this->radio.'" cy="'.$this->radio.'" r="'.$this->radio.'"  fill="red" />'.
         '</svg>';
     }
@@ -81,15 +84,17 @@ class Circulo extends Figura {
     }
 }
 
-class Triangulo extends Figura {
+
+
+class Triangulo extends FiguraGeometrica {
 	protected $lado1;
 	protected $lado2;
 	protected $lado3;
 
 	public function __construct($lado1, $lado2, $lado3) {
-		$this->lado1 = $lado1 * 1;
-		$this->lado2 = $lado2 * 1;
-		$this->lado3 = $lado3 * 1;
+		$this->lado1 = $lado1;
+		$this->lado2 = $lado2;
+		$this->lado3 = $lado3;
 	}
 
     public function generarSVG() {
@@ -100,7 +105,7 @@ class Triangulo extends Figura {
         }
         $x = sqrt( ($lado * $lado) - ($this->altura() * $this->altura()) );
         $vertice = $lado;
-        return '<svg height="1000" width="100%">'.
+        return '<svg height="'.($this->altura()).'" width="100%">'.
         "<polygon points='0,{$this->altura()} {$this->base()},{$this->altura()} ".$x.",0' style='fill:lime;stroke:purple;stroke-width:1' />"
         .'</svg>';
     }
@@ -145,13 +150,13 @@ class Triangulo extends Figura {
     }
 }
 
-class Cuadrado extends Figura {
+class Cuadrado extends FiguraGeometrica {
 	protected $lado;
 	public function __construct($lado) {
 		$this->lado = $lado * 1;
 	}
     public function generarSVG() {
-        return '<svg width="100%" height="1000px">'.
+        return '<svg width="100%" height="'.($this->lado).'">'.
         '<rect width="'.$this->lado.'" height="'.$this->lado.'" style="fill:rgb(0,0,255);stroke-width:3;stroke:rgb(0,0,0)" />'.
             '</svg>';
     }
@@ -179,18 +184,18 @@ $figura;
 if (!isset($_POST['generar'])) {
 
 } else if ($_GET['figura'] === 'circulo') {
-	$radio = isset($_POST['radio']) ? $_POST['radio'] : '';
+	$radio = isset($_POST['radio']) ? $_POST['radio'] * 1 : '';
     if ($radio > 500 || $radio < 1) {
         $errors[] = "Las medidas deben estar entre 1 y 500 px";
     }
     if (!is_integer($radio*1)) {
         $errors[] = "El radio debe ser un número entero";
     }
-    $figura = FiguraFactory::construirCirculo($radio);
+    $figura = FiguraGeometricaFactory::construirCirculo($radio);
 } else if ($_GET['figura'] === 'triangulo') {
-	$lado1 = isset($_POST['lado1']) ? $_POST['lado1'] : '';
-	$lado2 = isset($_POST['lado2']) ? $_POST['lado2'] : '';
-	$lado3 = isset($_POST['lado3']) ? $_POST['lado3'] : '';
+	$lado1 = isset($_POST['lado1']) ? $_POST['lado1'] * 1: '';
+	$lado2 = isset($_POST['lado2']) ? $_POST['lado2'] * 1: '';
+	$lado3 = isset($_POST['lado3']) ? $_POST['lado3'] * 1: '';
     if ($lado1 > 500 || $lado2 > 500 || $lado3 > 500 ||
         $lado1 < 1 || $lado2 < 1 || $lado3 < 1) {
         $errors[] = "Las medidas deben estar entre 1 y 500 px";
@@ -198,10 +203,10 @@ if (!isset($_POST['generar'])) {
     if (!is_integer($lado1*1) || !is_integer($lado2*1) || !is_integer($lado3*1)) {
         $errors[] = "Las medidas deben ser números enteros";
     }
-    $figura = FiguraFactory::construirTriangulo($lado1, $lado2, $lado3);
+    $figura = FiguraGeometricaFactory::construirTriangulo($lado1, $lado2, $lado3);
 } else if ($_GET['figura'] === 'cuadrado') {
-	$lado = isset($_POST['lado']) ? $_POST['lado'] : '';
-    $figura = FiguraFactory::construirCuadrado($lado);
+	$lado = isset($_POST['lado']) ? $_POST['lado'] * 1: '';
+    $figura = FiguraGeometricaFactory::construirCuadrado($lado);
     if ($lado > 500 || $lado < 1) {
         $errors[] = "Las medidas deben estar entre 1 y 500 px";
     }
@@ -228,6 +233,19 @@ if (!isset($_POST['generar'])) {
         <link rel="stylesheet" href="css/normalize.css">
         <link rel="stylesheet" href="css/main.css">
         <script src="js/vendor/modernizr-2.8.3.min.js"></script>
+        <style type="text/css">
+            table {
+                border: 2px solid black;
+                text-align: left;
+            }
+            th {
+                font-size: 1.5em;
+                border: 2px solid black;
+            }
+            body {
+                padding : 0 20px;
+            }
+        </style>
     </head>
     <body>
         <!--[if lt IE 8]>
@@ -235,7 +253,8 @@ if (!isset($_POST['generar'])) {
         <![endif]-->
 
         <!-- Add your site or application content here -->
-        <h1>¿Qué Figura deseas construir?</h1>
+
+        <h1>¿Qué FiguraGeometrica deseas construir?</h1>
         <ul>
         	<li>
         		<a href="?figura=circulo">Circulo</a>
@@ -250,7 +269,7 @@ if (!isset($_POST['generar'])) {
         <?php
     	if (isset($_GET['figura'])) {
     	?>
-        <form method="post">
+        <form method="post" >
         	<?php
         	if ($_GET['figura'] === 'circulo') {
         	?>
@@ -277,6 +296,7 @@ if (!isset($_POST['generar'])) {
         	<br>
         	<input type="submit" name="generar" value="Construir!">
         </form>
+        
         <?php
     	}
         if (!count($errors) && isset($figura)) {
@@ -287,6 +307,7 @@ if (!isset($_POST['generar'])) {
             echo $figura->generarSVG();
         }
     	?>
+        <img src="uml.png">
         <small style="position:fixed;right: 1em;bottom: 1em">Thanks HTML5 Boilerplate.</small>
 
 
